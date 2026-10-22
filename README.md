@@ -31,6 +31,8 @@ most tools report calibration as a single confident number anyway.
 | 5a. Calibration (baseline) | `src/calibration.py` | Slow numerical (Nelder-Mead) Heston calibration from a price surface |
 | 4. Data | `src/generate_dataset.py` | Builds a 6,000-sample (parameters → price surface) training set |
 | 5b–6. ML calibration + confidence | `src/ml_calibration.py` | Random Forest calibrator: prices → parameters in ~8ms, with a 90% confidence range from tree-to-tree spread, carried through to a final option price range |
+| 7. Validation (started) | `src/market_validation.py` | Pulls a **live** SPY options chain via `yfinance` and compares real market implied vol against our synthetic Heston skew |
+| 7. Validation (stretch, blocked) | `src/nse_option_chain.py` | Attempted live NIFTY option chain from NSE India; blocked by NSE's bot detection — kept as a documented fallback |
 
 ## Key results
 
@@ -44,6 +46,9 @@ most tools report calibration as a single confident number anyway.
   (~8ms vs ~2s), and its honest uncertainty — carried through from
   parameters to final price — gives results like:
   *"fair price ≈ ₹10.40, likely between ₹8.89 and ₹11.88."*
+- A **live** SPY options chain (pulled via `yfinance`) shows the same
+  downward-sloping volatility skew our Heston simulation produces —
+  real markets are not flat-volatility (`results/real_vs_synthetic_skew.png`).
 
 See [`PROGRESS.md`](PROGRESS.md) for the full write-up, including what's
 still open (validation against real market option data).
@@ -51,7 +56,7 @@ still open (validation against real market option data).
 ## Running it
 
 ```bash
-pip install numpy scipy matplotlib pandas scikit-learn
+pip install numpy scipy matplotlib pandas scikit-learn yfinance requests
 
 cd src
 python3 black_scholes.py       # sanity check + put-call parity
@@ -61,4 +66,6 @@ python3 run_experiments.py     # regenerates plots in results/
 python3 calibration.py         # baseline (slow) optimizer calibration
 python3 generate_dataset.py    # builds results/heston_dataset.csv (~90s)
 python3 ml_calibration.py      # trains ML calibrator, runs the full demo
+python3 market_validation.py   # pulls a LIVE SPY options chain, compares real vs synthetic skew
+python3 nse_option_chain.py    # attempts a live NIFTY chain from NSE (often blocked)
 ```

@@ -68,11 +68,38 @@ needed. Verified end-to-end on a held-out target price surface:
   with a 90%-confidence range of ₹8.89–₹11.88 — directly matching the
   "₹105, likely between ₹98–₹112" deliverable format from the proposal.
 
-## Not yet built (step 7 on the roadmap)
+## Step 7 — started: real market validation — `market_validation.py`
 
-- Step 7: validation against real market option data (would need actual
-  quoted option prices, e.g. NSE/Yahoo Finance options chain, to re-run
-  the same calibration pipeline on).
+Pulls a **live** SPY options chain via `yfinance` (free, no key, ~15-20 min
+delayed) and compares its real, exchange-computed implied volatilities
+against our synthetic Heston skew.
+
+- Fetched live on 2026-10-23: SPY spot ~$761, ~30-day expiry, 123
+  liquid strikes.
+- Real market implied vol ranges from **~49% down to ~13%** across
+  strikes near the money — a *much* steeper skew than our synthetic
+  baseline (~24% to ~16%). Confirmed negative skew slope
+  (-1.19% IV per moneyness point): real markets are structurally
+  non-flat, exactly as the project's motivation claims.
+- **Caveat, stated honestly:** the real chain is ~29 days to expiry vs.
+  1 year for our synthetic example — short-dated skews are naturally
+  steeper, so this isn't a strict apples-to-apples magnitude
+  comparison. The right comparison is shape (confirmed: both skew
+  downward) not scale.
+- This is shape-matching, not yet calibration. **True next step:** feed
+  this real chain into `calibration.py` / `ml_calibration.py` to
+  recover the Heston parameters that actually fit SPY, instead of just
+  comparing against our illustrative example.
+- Also attempted an NSE India (NIFTY) option chain fetch
+  (`nse_option_chain.py`) as a India-market alternative — blocked by
+  NSE's bot detection (404 on the public endpoint from a script). Kept
+  in the repo as a documented, known-fragile fallback; `yfinance`/SPY is
+  the reliable path.
+
+## Fully remaining
+
+- Full calibration (not just shape comparison) against the live chain
+  above, and a second real snapshot to check repeatability.
 
 ## How to reproduce everything
 
