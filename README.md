@@ -56,7 +56,7 @@ still open (validation against real market option data).
 ## Running it
 
 ```bash
-pip install numpy scipy matplotlib pandas scikit-learn yfinance requests
+pip install numpy scipy matplotlib pandas scikit-learn yfinance requests plotext
 
 cd src
 python3 black_scholes.py       # sanity check + put-call parity

@@ -27,6 +27,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 import yfinance as yf
+import plotext as tplt
 
 RESULTS_DIR = os.path.join(os.path.dirname(__file__), "..", "results")
 
@@ -110,6 +111,36 @@ def plot_real_vs_synthetic_skew(real_data, synthetic_strikes, synthetic_iv, out_
     print(f"  saved {out_path}")
 
 
+def plot_terminal_skew(real_data, synthetic_strikes, synthetic_iv):
+    """Render the same real-vs-synthetic skew comparison directly in the
+    terminal (Unicode braille plot), for live demos with no file/browser
+    needed."""
+    chain = real_data["chain"]
+    spot = real_data["spot"]
+
+    moneyness = (chain["strike"] / spot * 100).tolist()
+    real_iv_pct = (chain["impliedVolatility"] * 100).tolist()
+    synth_iv_pct = [v * 100 for v in synthetic_iv]
+
+    fig = tplt.figure
+    fig.clear()
+
+    s_real = fig.signal(moneyness, real_iv_pct, marker="braille")
+    s_real.lines(True)
+    s_real.label(f"Real {real_data['ticker']} ({int(real_data['T']*365)}d)")
+    fig.draw(s_real)
+
+    s_synth = fig.signal(synthetic_strikes, synth_iv_pct, marker="braille")
+    s_synth.lines(True)
+    s_synth.label("Synthetic Heston (365d)")
+    fig.draw(s_synth)
+
+    fig.title("Real market skew vs. our Heston simulation")
+    fig.label("Moneyness (strike / spot x 100)", axis="x")
+    fig.label("Implied volatility (%)", axis="y")
+    fig.show()
+
+
 if __name__ == "__main__":
     # SPY: broad index ETF options, deep and liquid, cleanest skew to see
     TICKER = "SPY"
@@ -128,6 +159,9 @@ if __name__ == "__main__":
 
     out_path = os.path.join(RESULTS_DIR, "real_vs_synthetic_skew.png")
     plot_real_vs_synthetic_skew(data, synthetic_strikes, synthetic_iv, out_path)
+
+    print()
+    plot_terminal_skew(data, synthetic_strikes, synthetic_iv)
 
     real_slope = np.polyfit(data["chain"]["strike"] / data["spot"] * 100,
                              data["chain"]["impliedVolatility"] * 100, 1)[0]
