@@ -53,6 +53,17 @@ most tools report calibration as a single confident number anyway.
 See [`PROGRESS.md`](PROGRESS.md) for the full write-up, including what's
 still open (validation against real market option data).
 
+## Live web demo (Review 3)
+
+**[web-sepia-seven-68.vercel.app](https://web-sepia-seven-68.vercel.app)** —
+the Heston + ML calibration pipeline, live in the browser: an interactive
+calibration demo, the real-vs-synthetic skew chart, and a side-by-side
+comparison against a typical flat-volatility free options calculator (built
+to directly address the Review 3 ask of comparing against an existing
+website). See [`web/README.md`](web/README.md) for how it's built — the core
+math is reimplemented in TypeScript so it runs as Vercel serverless
+functions with no Python runtime needed.
+
 ## Running it
 
 ```bash
