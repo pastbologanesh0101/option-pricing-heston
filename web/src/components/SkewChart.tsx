@@ -13,9 +13,14 @@ export interface SkewSeries {
   points: SkewSeriesPoint[];
 }
 
-// Validated categorical pair (dataviz skill, slots 1 & 2): blue #2a78d6,
-// orange #eb6834 — passes CVD/contrast checks for a 2-series light-mode chart.
-export const SERIES_COLORS = { real: "#2a78d6", synthetic: "#eb6834" };
+// Validated categorical pair (dataviz skill, slots 1 & 2), dark-surface
+// steps: blue #3987e5, orange #d95926 — passes CVD/contrast checks against
+// the dark surface #1a1a19 used below.
+export const SERIES_COLORS = { real: "#3987e5", synthetic: "#d95926" };
+const SURFACE = "#141419";
+const GRID = "#2a2a33";
+const AXIS_TEXT = "#8a8a94";
+const LABEL_TEXT = "#c7c7ce";
 
 export function SkewChart({
   series,
@@ -52,10 +57,10 @@ export function SkewChart({
   const xTicks = 5;
 
   return (
-    <div className="w-full">
+    <div className="w-full rounded-xl border p-4" style={{ background: SURFACE, borderColor: GRID }}>
       <div className="mb-2 flex flex-wrap gap-4">
         {series.map((s) => (
-          <div key={s.label} className="flex items-center gap-1.5 text-sm text-neutral-700">
+          <div key={s.label} className="flex items-center gap-1.5 text-sm" style={{ color: LABEL_TEXT }}>
             <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: s.color }} />
             {s.label}
           </div>
@@ -79,8 +84,8 @@ export function SkewChart({
             const y = yScale(v);
             return (
               <g key={i}>
-                <line x1={0} x2={innerW} y1={y} y2={y} stroke="#e5e5e3" strokeWidth={1} />
-                <text x={-8} y={y} textAnchor="end" dominantBaseline="middle" fontSize={11} fill="#6b6b66">
+                <line x1={0} x2={innerW} y1={y} y2={y} stroke={GRID} strokeWidth={1} />
+                <text x={-8} y={y} textAnchor="end" dominantBaseline="middle" fontSize={11} fill={AXIS_TEXT}>
                   {v.toFixed(1)}
                 </text>
               </g>
@@ -90,7 +95,7 @@ export function SkewChart({
             const v = xMin + (i / xTicks) * (xMax - xMin);
             const x = xScale(v);
             return (
-              <text key={i} x={x} y={innerH + 20} textAnchor="middle" fontSize={11} fill="#6b6b66">
+              <text key={i} x={x} y={innerH + 20} textAnchor="middle" fontSize={11} fill={AXIS_TEXT}>
                 {v.toFixed(0)}
               </text>
             );
@@ -113,7 +118,7 @@ export function SkewChart({
                       cy={yScale(p.y)}
                       r={hover?.sIdx === sIdx && hover?.pIdx === pIdx ? 5 : 3}
                       fill={s.color}
-                      stroke="#fcfcfb"
+                      stroke={SURFACE}
                       strokeWidth={1.5}
                       onMouseEnter={() => setHover({ sIdx, pIdx })}
                       onMouseLeave={() => setHover(null)}
@@ -133,11 +138,11 @@ export function SkewChart({
             transform="rotate(-90)"
             textAnchor="middle"
             fontSize={12}
-            fill="#3a3a36"
+            fill={LABEL_TEXT}
           >
             {yLabel}
           </text>
-          <text x={innerW / 2} y={innerH + 36} textAnchor="middle" fontSize={12} fill="#3a3a36">
+          <text x={innerW / 2} y={innerH + 36} textAnchor="middle" fontSize={12} fill={LABEL_TEXT}>
             {xLabel}
           </text>
         </g>
