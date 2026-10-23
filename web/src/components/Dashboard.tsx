@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { SkewChart, SERIES_COLORS } from "./SkewChart";
+import { Sparkline } from "./Sparkline";
 
 interface MarketSnapshot {
   ticker: string;
@@ -133,6 +134,78 @@ function StatTile({ label, value, sub }: { label: string; value: string; sub?: s
   );
 }
 
+interface SpotData {
+  price: number;
+  changePercent: number;
+  dayHigh: number;
+  dayLow: number;
+  fiftyTwoWeekHigh: number;
+  fiftyTwoWeekLow: number;
+  volume: number;
+  series: { t: number; price: number }[];
+}
+
+function fmtVol(v: number) {
+  if (v >= 1e6) return `${(v / 1e6).toFixed(1)}M`;
+  if (v >= 1e3) return `${(v / 1e3).toFixed(1)}K`;
+  return String(v);
+}
+
+function WatchRow({
+  symbol,
+  name,
+  value,
+  sub,
+  deltaLabel,
+  deltaPositive,
+  badge,
+  badgeColor,
+}: {
+  symbol: string;
+  name: string;
+  value: string;
+  sub?: string;
+  deltaLabel?: string;
+  deltaPositive?: boolean;
+  badge: string;
+  badgeColor: string;
+}) {
+  return (
+    <div className="flex items-center justify-between px-3 py-2.5" style={{ borderBottom: `1px solid ${C.border}` }}>
+      <div className="flex items-center gap-2.5">
+        <span
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full font-mono text-[11px] font-bold"
+          style={{ background: badgeColor, color: C.bg }}
+        >
+          {badge}
+        </span>
+        <div>
+          <div className="font-mono text-xs font-semibold" style={{ color: C.text }}>
+            {symbol}
+          </div>
+          <div className="text-[10px]" style={{ color: C.textFaint }}>
+            {name}
+          </div>
+        </div>
+      </div>
+      <div className="text-right">
+        <div className="font-mono text-xs font-semibold" style={{ color: C.text }}>
+          {value}
+        </div>
+        {deltaLabel ? (
+          <div className="font-mono text-[10px]" style={{ color: deltaPositive ? C.good : C.critical }}>
+            {deltaLabel}
+          </div>
+        ) : sub ? (
+          <div className="text-[10px]" style={{ color: C.textFaint }}>
+            {sub}
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 function SectionHeading({ n, title, sub }: { n: string; title: string; sub: string }) {
   return (
     <div className="mb-5 flex items-start gap-3">
@@ -155,7 +228,7 @@ function SectionHeading({ n, title, sub }: { n: string; title: string; sub: stri
 }
 
 export function Dashboard({ initialSnapshot }: { initialSnapshot: MarketSnapshot }) {
-  const [spot, setSpot] = useState<{ price: number; changePercent: number } | null>(null);
+  const [spot, setSpot] = useState<SpotData | null>(null);
   const [tick, setTick] = useState(0);
 
   const [params, setParams] = useState<Record<string, number>>({
@@ -249,37 +322,129 @@ export function Dashboard({ initialSnapshot }: { initialSnapshot: MarketSnapshot
             Rikhil Modalavalasa (25BCE2884) · Vishwanathan (25BCE2885)
           </p>
 
-          {/* live ticker */}
+          {/* live status pill */}
           <div
-            className="mt-5 inline-flex items-center gap-3 rounded-full border px-4 py-2"
+            className="mt-5 inline-flex items-center gap-2 rounded-full border px-3 py-1.5"
             style={{ background: C.panel, borderColor: C.border }}
           >
-            <span className="relative flex h-2.5 w-2.5">
+            <span className="relative flex h-2 w-2">
               <span
                 className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-60"
                 style={{ background: C.good }}
               />
-              <span className="relative inline-flex h-2.5 w-2.5 rounded-full" style={{ background: C.good }} />
+              <span className="relative inline-flex h-2 w-2 rounded-full" style={{ background: C.good }} />
             </span>
-            {spot ? (
-              <span className="font-mono text-sm" style={{ color: C.text }}>
-                {initialSnapshot.ticker} <strong>${spot.price.toFixed(2)}</strong>{" "}
-                <span style={{ color: spot.changePercent >= 0 ? C.good : C.critical }}>
-                  {spot.changePercent >= 0 ? "▲" : "▼"} {Math.abs(spot.changePercent).toFixed(2)}%
-                </span>
-                <span className="ml-2 text-xs" style={{ color: C.textFaint }}>
-                  live · updated {tick} time{tick === 1 ? "" : "s"} this session
-                </span>
-              </span>
-            ) : (
-              <span className="text-sm" style={{ color: C.textMuted }}>
-                connecting to live feed…
-              </span>
-            )}
+            <span className="text-xs" style={{ color: C.textMuted }}>
+              {spot ? `live feed connected · refreshed ${tick} time${tick === 1 ? "" : "s"} this session` : "connecting to live feed…"}
+            </span>
+          </div>
+
+          {/* ===== TradingView-style hero: chart + watchlist ===== */}
+          <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_300px]">
+            {/* main chart card */}
+            <div className="rounded-xl border p-5" style={{ background: C.panel, borderColor: C.border }}>
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <span
+                    className="flex h-10 w-10 items-center justify-center rounded-full font-mono text-sm font-bold"
+                    style={{ background: C.blue, color: C.bg }}
+                  >
+                    S
+                  </span>
+                  <div>
+                    <div className="font-mono text-sm font-semibold" style={{ color: C.text }}>
+                      {initialSnapshot.ticker} <span style={{ color: C.textFaint }}>· SPDR S&amp;P 500 ETF</span>
+                    </div>
+                    <div className="text-[11px]" style={{ color: C.textFaint }}>
+                      NYSEArca · intraday, 5m bars
+                    </div>
+                  </div>
+                </div>
+                {spot && (
+                  <div className="text-right">
+                    <div className="font-mono text-2xl font-bold" style={{ color: C.text }}>
+                      ${spot.price.toFixed(2)}
+                    </div>
+                    <div className="font-mono text-sm" style={{ color: spot.changePercent >= 0 ? C.good : C.critical }}>
+                      {spot.changePercent >= 0 ? "▲" : "▼"} {Math.abs(spot.changePercent).toFixed(2)}% today
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div className="mt-4">
+                <Sparkline points={spot?.series ?? []} positive={(spot?.changePercent ?? 0) >= 0} />
+              </div>
+            </div>
+
+            {/* watchlist sidebar */}
+            <div className="rounded-xl border overflow-hidden" style={{ background: C.panel, borderColor: C.border }}>
+              <div
+                className="px-3 py-2 text-[10px] font-semibold uppercase tracking-wider"
+                style={{ background: "#1a1a20", color: C.textFaint, borderBottom: `1px solid ${C.border}` }}
+              >
+                Live &amp; derived — watchlist
+              </div>
+              {spot && (
+                <>
+                  <WatchRow
+                    symbol={initialSnapshot.ticker}
+                    name="Spot price"
+                    value={`$${spot.price.toFixed(2)}`}
+                    deltaLabel={`${spot.changePercent >= 0 ? "+" : ""}${spot.changePercent.toFixed(2)}%`}
+                    deltaPositive={spot.changePercent >= 0}
+                    badge="S"
+                    badgeColor={C.blue}
+                  />
+                  <WatchRow
+                    symbol="DAY RANGE"
+                    name="High / low"
+                    value={`$${spot.dayHigh.toFixed(2)}`}
+                    sub={`$${spot.dayLow.toFixed(2)}`}
+                    badge="D"
+                    badgeColor="#4a4a56"
+                  />
+                  <WatchRow
+                    symbol="52W RANGE"
+                    name="High / low"
+                    value={`$${spot.fiftyTwoWeekHigh.toFixed(2)}`}
+                    sub={`$${spot.fiftyTwoWeekLow.toFixed(2)}`}
+                    badge="52"
+                    badgeColor="#4a4a56"
+                  />
+                  <WatchRow
+                    symbol="VOLUME"
+                    name="Today"
+                    value={fmtVol(spot.volume)}
+                    badge="V"
+                    badgeColor="#4a4a56"
+                  />
+                </>
+              )}
+              {result && (
+                <>
+                  <WatchRow
+                    symbol="NAIVE"
+                    name="Flat-vol calculator"
+                    value={`₹${result.naive.price.toFixed(2)}`}
+                    sub="no range"
+                    badge="N"
+                    badgeColor={C.critical}
+                  />
+                  <WatchRow
+                    symbol="THIS PROJECT"
+                    name="Heston + ML, 90% range"
+                    value={`₹${result.priceRange.mean.toFixed(2)}`}
+                    sub={`₹${result.priceRange.lower.toFixed(2)}–₹${result.priceRange.upper.toFixed(2)}`}
+                    badge="P"
+                    badgeColor={C.gold}
+                  />
+                </>
+              )}
+            </div>
           </div>
 
           {/* stat strip */}
-          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
             <StatTile label="Variance reduction" value="−28%" sub="antithetic variates" />
             <StatTile label="Calibration speedup" value="~250x" sub="RF vs Nelder-Mead" />
             <StatTile label="Training samples" value="6,000" sub="simulated price surfaces" />
@@ -442,6 +607,45 @@ export function Dashboard({ initialSnapshot }: { initialSnapshot: MarketSnapshot
                       </tbody>
                     </table>
                   </div>
+                  <div className="rounded-xl border p-4" style={{ background: C.panel, borderColor: C.border }}>
+                    <div className="mb-3 text-[10px] uppercase tracking-wider" style={{ color: C.textFaint }}>
+                      ML mean vs. true, per parameter (% deviation)
+                    </div>
+                    <div className="space-y-2">
+                      {PARAM_META.map((p) => {
+                        const trueVal = result.trueParams[p.key];
+                        const mlVal = result.calibrated.mean[p.key];
+                        const pct = trueVal !== 0 ? ((mlVal - trueVal) / Math.abs(trueVal)) * 100 : 0;
+                        const clamped = Math.max(-50, Math.min(50, pct));
+                        const positive = clamped >= 0;
+                        return (
+                          <div key={p.key} className="flex items-center gap-2">
+                            <span className="w-10 shrink-0 font-mono text-[10px]" style={{ color: C.textMuted }}>
+                              {p.key}
+                            </span>
+                            <div className="relative h-3.5 flex-1 rounded" style={{ background: "#1a1a20" }}>
+                              <div className="absolute left-1/2 top-0 h-full w-px" style={{ background: C.borderStrong }} />
+                              <div
+                                className="absolute top-0 h-full rounded"
+                                style={{
+                                  background: positive ? C.good : C.critical,
+                                  left: positive ? "50%" : `${50 + (clamped / 50) * 50}%`,
+                                  width: `${(Math.abs(clamped) / 50) * 50}%`,
+                                }}
+                              />
+                            </div>
+                            <span
+                              className="w-14 shrink-0 text-right font-mono text-[10px]"
+                              style={{ color: positive ? C.good : C.critical }}
+                            >
+                              {pct >= 0 ? "+" : ""}
+                              {pct.toFixed(0)}%
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
                   <p className="text-xs leading-relaxed" style={{ color: C.textFaint }}>
                     Notice the ML mean rarely matches &quot;true&quot; exactly even when prices fit well — that&apos;s
                     Heston&apos;s known <strong style={{ color: C.textMuted }}>parameter non-identifiability</strong>:
@@ -594,29 +798,37 @@ export function Dashboard({ initialSnapshot }: { initialSnapshot: MarketSnapshot
           </div>
         </section>
 
-        {/* ============ VERIFICATION / FOOTER ============ */}
+        {/* ============ VERIFICATION FEED / FOOTER ============ */}
         <section className="mb-10">
-          <SectionHeading n="✓" title="Verification log" sub="Every claim above was checked, not assumed." />
-          <div className="grid gap-2 sm:grid-cols-2">
+          <SectionHeading n="✓" title="Verification feed" sub="Every claim above was checked, not assumed." />
+          <div className="space-y-2">
             {[
-              "Black-Scholes pricer verified via put-call parity",
-              "Antithetic variates measured at ~27–30% std-error reduction",
-              "Heston collapses to Black-Scholes within 3 standard errors at xi=0",
-              "Heston produces a real volatility skew (23.6% → 16.2% across strikes 75–130)",
-              "Random Forest calibrator: ~250x faster than Nelder-Mead baseline",
-              "Non-identifiability confirmed: recovered params ≠ true params despite good price fit",
-              "Live SPY skew confirmed negative (downward), matching Heston's prediction",
-              "Full research code, plots and write-up public on GitHub",
-            ].map((item) => (
+              { tag: "CORRECTNESS", color: C.blue, text: "Black-Scholes pricer verified via put-call parity" },
+              { tag: "PERFORMANCE", color: C.good, text: "Antithetic variates measured at ~27–30% std-error reduction" },
+              { tag: "CORRECTNESS", color: C.blue, text: "Heston collapses to Black-Scholes within 3 standard errors at xi=0" },
+              { tag: "FINDING", color: C.gold, text: "Heston produces a real volatility skew (23.6% → 16.2% across strikes 75–130) that Black-Scholes cannot" },
+              { tag: "PERFORMANCE", color: C.good, text: "Random Forest calibrator measured ~250x faster than the Nelder-Mead baseline" },
+              { tag: "FINDING", color: C.gold, text: "Non-identifiability confirmed: recovered params ≠ true params despite a good price fit" },
+              { tag: "LIVE DATA", color: C.critical, text: "Live SPY skew confirmed negative (downward), matching Heston's prediction" },
+              { tag: "OPEN SOURCE", color: C.textFaint, text: "Full research code, plots and write-up public on GitHub" },
+            ].map((item, i) => (
               <div
-                key={item}
-                className="flex items-start gap-2 rounded-lg border px-3 py-2 text-xs"
-                style={{ background: C.panel, borderColor: C.border, color: C.textMuted }}
+                key={i}
+                className="flex items-center gap-3 rounded-lg border px-4 py-3"
+                style={{ background: C.panel, borderColor: C.border, borderLeft: `3px solid ${item.color}` }}
               >
-                <span className="mt-0.5" style={{ color: C.good }}>
-                  ✓
+                <span
+                  className="shrink-0 rounded px-1.5 py-0.5 font-mono text-[9px] font-bold tracking-wide"
+                  style={{ background: "rgba(255,255,255,0.06)", color: item.color }}
+                >
+                  {item.tag}
                 </span>
-                {item}
+                <span className="text-xs" style={{ color: C.text }}>
+                  {item.text}
+                </span>
+                <span className="ml-auto shrink-0 text-[10px]" style={{ color: C.textFaint }}>
+                  ✓ verified
+                </span>
               </div>
             ))}
           </div>
