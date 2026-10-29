@@ -852,6 +852,59 @@ export function Dashboard({ initialSnapshot }: { initialSnapshot: MarketSnapshot
             sub="Three kinds of tools already exist for this problem. Each gives up something this project doesn't have to."
           />
 
+          <div className="mb-10">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wide" style={{ color: C.textFaint }}>
+              Same question, two real screenshots — not a mockup
+            </p>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="overflow-hidden rounded-xl border" style={{ background: C.panel, borderColor: C.border }}>
+                <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: `1px solid ${C.border}` }}>
+                  <span className="text-xs font-semibold" style={{ color: C.text }}>
+                    A typical free calculator
+                  </span>
+                  <span className="font-mono text-[10px]" style={{ color: C.textFaint }}>
+                    goodcalculators.com
+                  </span>
+                </div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/compare/existing-calculator.png"
+                  alt="A typical free Black-Scholes calculator showing a single point price with no confidence range"
+                  className="w-full"
+                />
+                <div className="px-4 py-3 text-xs" style={{ color: C.textMuted, borderTop: `1px solid ${C.border}` }}>
+                  One flat volatility in, one number out. Call Price: <strong style={{ color: C.text }}>$58.82</strong> — no
+                  range, no real-market check, no sense of how wrong it might be.
+                </div>
+              </div>
+
+              <div
+                className="overflow-hidden rounded-xl border"
+                style={{ background: C.panel, borderColor: C.goldBright, boxShadow: "0 0 0 1px rgba(201,162,39,0.25)" }}
+              >
+                <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: `1px solid ${C.border}` }}>
+                  <span className="text-xs font-semibold" style={{ color: C.goldBright }}>
+                    This project
+                  </span>
+                  <span className="font-mono text-[10px]" style={{ color: C.textFaint }}>
+                    live demo, this site
+                  </span>
+                </div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/compare/this-project.png"
+                  alt="This project's calibration result showing a fair price with a 90% confidence range and per-parameter uncertainty"
+                  className="w-full"
+                />
+                <div className="px-4 py-3 text-xs" style={{ color: C.textMuted, borderTop: `1px solid ${C.border}` }}>
+                  Same kind of question, calibrated via Heston + ML in ~1ms:{" "}
+                  <strong style={{ color: C.goldBright }}>₹10.49, likely ₹8.86–₹12.32</strong> — a range, with the
+                  per-parameter uncertainty that produced it shown underneath.
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div className="overflow-x-auto rounded-xl border" style={{ background: C.panel, borderColor: C.border }}>
             <table className="w-full text-xs">
               <thead>
