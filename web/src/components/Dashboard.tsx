@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { SkewChart, SERIES_COLORS } from "./SkewChart";
 import { Sparkline } from "./Sparkline";
 
@@ -227,7 +227,66 @@ function SectionHeading({ n, title, sub }: { n: string; title: string; sub: stri
   );
 }
 
+const COMPARISON_ROWS: { feature: string; retail: string; paid: string; lib: string; ours: string }[] = [
+  { feature: "Pricing model", retail: "Black-Scholes only", paid: "Heston / SABR available", lib: "Heston available, in code", ours: "Heston stochastic volatility" },
+  { feature: "Volatility input", retail: "Flat — you type one number", paid: "Full vol surface", lib: "Flat, unless you build a surface yourself", ours: "Live-calibrated, skew-aware" },
+  { feature: "Confidence range", retail: "None — single price", paid: "Not standard output", lib: "None built in", ours: "90% range on every price" },
+  { feature: "Calibration speed", retail: "N/A — no calibration step", paid: "Seconds to minutes", lib: "Seconds to minutes, hand-coded", ours: "~250x faster — Random Forest" },
+  { feature: "Real market check, shown", retail: "No", paid: "Internal only, not public", lib: "No — you'd wire it up yourself", ours: "Live SPY chain, on this page" },
+  { feature: "Needs programming", retail: "No", paid: "No, but needs a paid license", lib: "Yes — C++ or Python", ours: "No — runs in your browser" },
+  { feature: "Cost", retail: "Free", paid: "$24,000+/year (Bloomberg)", lib: "Free, open source", ours: "Free, open source" },
+];
+
+function ComparisonCard({
+  label,
+  sub,
+  dotColor,
+  headerColor,
+  highlight,
+  priceLine,
+  bullets,
+}: {
+  label: string;
+  sub: string;
+  dotColor: string;
+  headerColor: string;
+  highlight?: boolean;
+  priceLine?: ReactNode;
+  bullets: { ok: boolean | null; text: string }[];
+}) {
+  return (
+    <div
+      className={highlight ? "rounded-xl p-5" : "rounded-xl border p-5"}
+      style={
+        highlight
+          ? { background: "rgba(201,162,39,0.06)", border: `2px solid ${C.gold}` }
+          : { background: C.panel, borderColor: C.border }
+      }
+    >
+      <div className="flex items-center gap-2">
+        <span className="h-1.5 w-1.5 rounded-full" style={{ background: dotColor }} />
+        <div className="text-xs font-semibold uppercase tracking-wide" style={{ color: headerColor }}>
+          {label}
+        </div>
+      </div>
+      <div className="mt-0.5 text-[11px]" style={{ color: C.textFaint }}>
+        {sub}
+      </div>
+      {priceLine && <div className="mt-2">{priceLine}</div>}
+      <ul className="mt-3 space-y-1.5 text-xs" style={{ color: highlight ? C.text : C.textMuted }}>
+        {bullets.map((b, i) => (
+          <li key={i}>
+            {b.ok === true ? "✓ " : b.ok === false ? "✗ " : "~ "}
+            {b.text}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export function Dashboard({ initialSnapshot }: { initialSnapshot: MarketSnapshot }) {
+  const [tab, setTab] = useState<"demo" | "compare">("demo");
   const [spot, setSpot] = useState<SpotData | null>(null);
   const [tick, setTick] = useState(0);
 
@@ -452,8 +511,28 @@ export function Dashboard({ initialSnapshot }: { initialSnapshot: MarketSnapshot
           </div>
         </header>
 
-        <hr className="mb-12" style={{ borderColor: C.border }} />
+        {/* ============ TAB NAV ============ */}
+        <div className="mb-10 flex gap-1 border-b" style={{ borderColor: C.border }}>
+          {[
+            { key: "demo" as const, label: "Live demo" },
+            { key: "compare" as const, label: "vs. existing tools" },
+          ].map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className="relative px-4 py-3 text-sm font-semibold transition-colors"
+              style={{ color: tab === t.key ? C.goldBright : C.textMuted }}
+            >
+              {t.label}
+              {tab === t.key && (
+                <span className="absolute inset-x-0 -bottom-px h-0.5" style={{ background: C.gold }} />
+              )}
+            </button>
+          ))}
+        </div>
 
+        {tab === "demo" && (
+        <>
         {/* ============ PIPELINE ============ */}
         <section className="mb-14">
           <SectionHeading
@@ -725,80 +804,7 @@ export function Dashboard({ initialSnapshot }: { initialSnapshot: MarketSnapshot
           </div>
         </section>
 
-        {/* ============ 3. COMPARISON ============ */}
-        <section className="mb-14">
-          <SectionHeading
-            n="3"
-            title="How this stacks up"
-            sub="Same market price fed into every column. Free calculators assume flat volatility; paid analytics platforms charge for exactly what this project does for free."
-          />
-
-          <div className="grid gap-4 md:grid-cols-3">
-            {/* typical free calculator */}
-            <div className="rounded-xl border p-5" style={{ background: C.panel, borderColor: C.border }}>
-              <div className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full" style={{ background: C.critical }} />
-                <div className="text-xs font-semibold uppercase tracking-wide" style={{ color: C.textFaint }}>
-                  Typical free calculator
-                </div>
-              </div>
-              {result && (
-                <div className="mt-2 font-mono text-2xl font-bold" style={{ color: C.textMuted }}>
-                  ₹{result.naive.price.toFixed(2)}
-                </div>
-              )}
-              <ul className="mt-3 space-y-1.5 text-xs" style={{ color: C.textMuted }}>
-                <li>✗ Flat volatility ({result ? (result.naive.flatVol * 100).toFixed(1) : "—"}% assumed at every strike)</li>
-                <li>✗ Single number, no confidence range</li>
-                <li>✗ No real-market validation shown</li>
-              </ul>
-            </div>
-
-            {/* paid platform */}
-            <div className="rounded-xl border p-5" style={{ background: C.panel, borderColor: C.border }}>
-              <div className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full" style={{ background: "#fab219" }} />
-                <div className="text-xs font-semibold uppercase tracking-wide" style={{ color: C.textFaint }}>
-                  Paid analytics platform
-                </div>
-              </div>
-              <div className="mt-2 font-mono text-2xl font-bold" style={{ color: C.textMuted }}>
-                $$ / mo
-              </div>
-              <ul className="mt-3 space-y-1.5 text-xs" style={{ color: C.textMuted }}>
-                <li>✓ Skew-aware models (Heston / SABR) exist</li>
-                <li>✗ Gated behind a paid tier — free users still get flat vol</li>
-                <li>~ Confidence ranges not standard output</li>
-              </ul>
-            </div>
-
-            {/* this project */}
-            <div className="rounded-xl border-2 p-5" style={{ background: "rgba(201,162,39,0.06)", borderColor: C.gold }}>
-              <div className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full" style={{ background: C.good }} />
-                <div className="text-xs font-semibold uppercase tracking-wide" style={{ color: C.goldBright }}>
-                  This project — free &amp; open
-                </div>
-              </div>
-              {result && (
-                <div className="mt-2 font-mono text-2xl font-bold" style={{ color: C.goldBright }}>
-                  ₹{result.priceRange.mean.toFixed(2)}{" "}
-                  <span className="text-sm font-normal" style={{ color: C.textMuted }}>
-                    (₹{result.priceRange.lower.toFixed(2)}–₹{result.priceRange.upper.toFixed(2)})
-                  </span>
-                </div>
-              )}
-              <ul className="mt-3 space-y-1.5 text-xs" style={{ color: C.text }}>
-                <li>✓ Stochastic volatility — produces a real skew</li>
-                <li>✓ Honest 90% confidence range, not false precision</li>
-                <li>✓ Validated against a live real options chain, above</li>
-                <li>✓ Open source, free, runs in your browser</li>
-              </ul>
-            </div>
-          </div>
-        </section>
-
-        {/* ============ VERIFICATION FEED / FOOTER ============ */}
+        {/* ============ VERIFICATION FEED ============ */}
         <section className="mb-10">
           <SectionHeading n="✓" title="Verification feed" sub="Every claim above was checked, not assumed." />
           <div className="space-y-2">
@@ -833,6 +839,187 @@ export function Dashboard({ initialSnapshot }: { initialSnapshot: MarketSnapshot
             ))}
           </div>
         </section>
+        </>
+        )}
+
+        {tab === "compare" && (
+        <>
+        {/* ============ COMPARISON TAB ============ */}
+        <section className="mb-14">
+          <SectionHeading
+            n="VS"
+            title="How this compares to what's already out there"
+            sub="Three kinds of tools already exist for this problem. Each gives up something this project doesn't have to."
+          />
+
+          <div className="overflow-x-auto rounded-xl border" style={{ background: C.panel, borderColor: C.border }}>
+            <table className="w-full text-xs">
+              <thead>
+                <tr style={{ background: "#1a1a20" }}>
+                  <th className="px-3 py-3 text-left align-bottom" style={{ color: C.textFaint }}>
+                    <span className="text-[10px] font-semibold uppercase tracking-wide">Feature</span>
+                  </th>
+                  <th className="px-3 py-3 text-left align-bottom" style={{ color: C.textFaint }}>
+                    <span className="block text-[10px] font-semibold uppercase tracking-wide">Free calculators</span>
+                    <span className="mt-0.5 block font-normal normal-case" style={{ color: C.textFaint }}>
+                      CBOE, Zerodha, Groww
+                    </span>
+                  </th>
+                  <th className="px-3 py-3 text-left align-bottom" style={{ color: C.textFaint }}>
+                    <span className="block text-[10px] font-semibold uppercase tracking-wide">Paid platforms</span>
+                    <span className="mt-0.5 block font-normal normal-case" style={{ color: C.textFaint }}>
+                      Bloomberg, Refinitiv Eikon
+                    </span>
+                  </th>
+                  <th className="px-3 py-3 text-left align-bottom" style={{ color: C.textFaint }}>
+                    <span className="block text-[10px] font-semibold uppercase tracking-wide">Code libraries</span>
+                    <span className="mt-0.5 block font-normal normal-case" style={{ color: C.textFaint }}>
+                      QuantLib
+                    </span>
+                  </th>
+                  <th className="px-3 py-3 text-left align-bottom" style={{ color: C.goldBright, background: "rgba(201,162,39,0.08)" }}>
+                    <span className="block text-[10px] font-semibold uppercase tracking-wide">This project</span>
+                    <span className="mt-0.5 block font-normal normal-case" style={{ color: C.goldBright, opacity: 0.8 }}>
+                      Free, live website
+                    </span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {COMPARISON_ROWS.map((row, i) => (
+                  <tr
+                    key={row.feature}
+                    style={{ borderTop: `1px solid ${C.border}`, background: i % 2 ? "transparent" : "rgba(255,255,255,0.015)" }}
+                  >
+                    <td className="px-3 py-3 font-semibold" style={{ color: C.text }}>
+                      {row.feature}
+                    </td>
+                    <td className="px-3 py-3" style={{ color: C.textMuted }}>
+                      {row.retail}
+                    </td>
+                    <td className="px-3 py-3" style={{ color: C.textMuted }}>
+                      {row.paid}
+                    </td>
+                    <td className="px-3 py-3" style={{ color: C.textMuted }}>
+                      {row.lib}
+                    </td>
+                    <td className="px-3 py-3 font-semibold" style={{ color: C.goldBright, background: "rgba(201,162,39,0.05)" }}>
+                      {row.ours}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <p className="mt-3 text-xs leading-relaxed" style={{ color: C.textFaint }}>
+            CBOE&apos;s public options calculator, and most retail tools like Zerodha&apos;s or Groww&apos;s, price off
+            Black-Scholes with one volatility number you type in — accurate at one strike, structurally wrong at
+            every other strike on the same expiry. Bloomberg and Refinitiv do have skew-aware models, but they sit
+            behind institutional licenses costing tens of thousands of dollars a year. QuantLib has a correct Heston
+            implementation, but it&apos;s a C++/Python library — there&apos;s no live site, no calibration UI, and no
+            confidence interval unless you build all three yourself.
+          </p>
+        </section>
+
+        <section className="mb-14">
+          <SectionHeading
+            n="VS"
+            title="Same question, four answers"
+            sub="What each kind of tool actually gives you when you ask: what is this option worth, and how sure are you?"
+          />
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <ComparisonCard
+              label="Free calculator"
+              sub="CBOE · Zerodha · Groww"
+              dotColor={C.critical}
+              headerColor={C.textFaint}
+              priceLine={
+                result && (
+                  <div className="font-mono text-2xl font-bold" style={{ color: C.textMuted }}>
+                    ₹{result.naive.price.toFixed(2)}
+                  </div>
+                )
+              }
+              bullets={[
+                { ok: false, text: `Flat volatility (${result ? (result.naive.flatVol * 100).toFixed(1) : "—"}% assumed at every strike)` },
+                { ok: false, text: "Single number, no confidence range" },
+                { ok: false, text: "No real-market validation shown" },
+                { ok: true, text: "Free and instant" },
+              ]}
+            />
+
+            <ComparisonCard
+              label="Paid platform"
+              sub="Bloomberg · Refinitiv Eikon"
+              dotColor="#fab219"
+              headerColor={C.textFaint}
+              priceLine={
+                <div className="font-mono text-2xl font-bold" style={{ color: C.textMuted }}>
+                  $24,000+/yr
+                </div>
+              }
+              bullets={[
+                { ok: true, text: "Skew-aware models (Heston / SABR) exist" },
+                { ok: false, text: "Gated behind an institutional license" },
+                { ok: null, text: "Confidence ranges not standard output" },
+                { ok: false, text: "Not usable from a student project budget" },
+              ]}
+            />
+
+            <ComparisonCard
+              label="Code library"
+              sub="QuantLib"
+              dotColor={C.blue}
+              headerColor={C.textFaint}
+              priceLine={
+                <div className="font-mono text-2xl font-bold" style={{ color: C.textMuted }}>
+                  Free
+                </div>
+              }
+              bullets={[
+                { ok: true, text: "Correct Heston pricing is in there" },
+                { ok: false, text: "No website — you write the code yourself" },
+                { ok: false, text: "No confidence intervals out of the box" },
+                { ok: false, text: "No live market validation built in" },
+              ]}
+            />
+
+            <ComparisonCard
+              label="This project"
+              sub="Free, open source, live"
+              dotColor={C.good}
+              headerColor={C.goldBright}
+              highlight
+              priceLine={
+                result && (
+                  <div className="font-mono text-2xl font-bold" style={{ color: C.goldBright }}>
+                    ₹{result.priceRange.mean.toFixed(2)}{" "}
+                    <span className="text-sm font-normal" style={{ color: C.textMuted }}>
+                      (₹{result.priceRange.lower.toFixed(2)}–₹{result.priceRange.upper.toFixed(2)})
+                    </span>
+                  </div>
+                )
+              }
+              bullets={[
+                { ok: true, text: "Stochastic volatility — produces a real skew" },
+                { ok: true, text: "Honest 90% confidence range, not false precision" },
+                { ok: true, text: "Validated against a live real options chain" },
+                { ok: true, text: "No install, no license — runs in your browser" },
+              ]}
+            />
+          </div>
+
+          <p className="mt-4 text-xs leading-relaxed" style={{ color: C.textFaint }}>
+            The gap this project sits in: free tools give you a number with no sense of its own uncertainty; paid
+            platforms give you the right model but price out a student (or a retail trader); code libraries give you
+            the right math but no usable product around it. This project is the one column that is free, skew-aware,
+            honest about its uncertainty, and a live website — not a spreadsheet, a license, or a library you have to
+            program yourself.
+          </p>
+        </section>
+        </>
+        )}
 
         <footer className="flex flex-wrap items-center justify-between gap-3 border-t pt-6 text-xs" style={{ borderColor: C.border, color: C.textFaint }}>
           <div className="flex flex-wrap gap-2">
