@@ -56,7 +56,10 @@ export async function POST(request: Request) {
 
   // 3. Carry the parameter uncertainty through to a final option price range,
   //    at whatever strike the user actually typed in (defaults to 100 = ATM).
-  const kTarget = clamp(Number(body.K ?? 100), [70, 130]);
+  //    Only bounded enough to keep the Monte Carlo numerically sane (no
+  //    zero/negative strikes) -- NOT clamped to a narrow window, so two
+  //    different real inputs never silently collapse to the same output.
+  const kTarget = clamp(Number(body.K ?? 100), [1, 100_000]);
   const pMean = hestonMcPrice(S0, kTarget, T, R, mean as unknown as HestonParams, "call", 12000, 50, 5).price;
   const pLower = hestonMcPrice(S0, kTarget, T, R, lower as unknown as HestonParams, "call", 12000, 50, 5).price;
   const pUpper = hestonMcPrice(S0, kTarget, T, R, upper as unknown as HestonParams, "call", 12000, 50, 5).price;

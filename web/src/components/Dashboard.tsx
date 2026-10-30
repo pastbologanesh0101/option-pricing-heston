@@ -899,8 +899,8 @@ export function Dashboard({ initialSnapshot }: { initialSnapshot: MarketSnapshot
                 </label>
                 <input
                   type="number"
-                  min={70}
-                  max={130}
+                  min={1}
+                  max={1000}
                   step={1}
                   value={strikeK}
                   onChange={(e) => setStrikeK(Number(e.target.value))}
@@ -908,7 +908,8 @@ export function Dashboard({ initialSnapshot }: { initialSnapshot: MarketSnapshot
                   style={{ background: C.bg, border: `1px solid ${C.borderStrong}`, color: C.text }}
                 />
                 <p className="mt-1 text-[10px]" style={{ color: C.textFaint }}>
-                  Spot is normalized to 100, so K=100 is at-the-money — try 85 (deep ITM) or 115 (OTM).
+                  Spot is normalized to 100, so K=100 is at-the-money — try 85 (deep ITM), 115 (OTM), or
+                  something far away like 500 to watch both prices correctly collapse toward zero.
                 </p>
               </div>
               {PARAM_META.map((p) => (
