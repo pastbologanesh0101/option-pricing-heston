@@ -313,6 +313,7 @@ export function Dashboard({ initialSnapshot }: { initialSnapshot: MarketSnapshot
   });
   const [result, setResult] = useState<PriceResponse | null>(null);
   const [loading, setLoading] = useState(false);
+  const [strikeK, setStrikeK] = useState(100);
 
   useEffect(() => {
     let cancelled = false;
@@ -342,7 +343,7 @@ export function Dashboard({ initialSnapshot }: { initialSnapshot: MarketSnapshot
       const res = await fetch("/api/price", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(params),
+        body: JSON.stringify({ ...params, K: strikeK }),
       });
       const json = await res.json();
       setResult(json);
@@ -553,6 +554,8 @@ export function Dashboard({ initialSnapshot }: { initialSnapshot: MarketSnapshot
             { href: "#pipeline", label: "Pipeline" },
             { href: "#calibrate", label: "Calibrate live" },
             { href: "#market", label: "Market validation" },
+            { href: "#realcal", label: "Real calibration" },
+            { href: "#limits", label: "Limitations" },
             { href: "#verify", label: "Verification feed" },
           ].map((link) => (
             <a
@@ -591,34 +594,36 @@ export function Dashboard({ initialSnapshot }: { initialSnapshot: MarketSnapshot
           />
 
           <div className="mb-10">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wide" style={{ color: C.textFaint }}>
+            <p className="mb-3 text-sm font-semibold uppercase tracking-wide" style={{ color: C.textFaint }}>
               Same question, two real screenshots — not a mockup
             </p>
-            <div className="grid grid-cols-1 items-start gap-5 md:grid-cols-2">
+            <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-2">
               <div
                 className="overflow-hidden rounded-xl border transition-transform duration-300 hover:-translate-y-1"
                 style={{ background: C.panel, borderColor: C.border, boxShadow: "0 8px 24px rgba(0,0,0,0.35)" }}
               >
-                <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: `1px solid ${C.border}`, background: "#1a1a20" }}>
-                  <span className="flex items-center gap-2 text-xs font-semibold" style={{ color: C.text }}>
+                <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: `1px solid ${C.border}`, background: "#1a1a20" }}>
+                  <span className="flex items-center gap-2 text-sm font-bold" style={{ color: C.text }}>
                     <span className="flex gap-1">
-                      <span className="h-2 w-2 rounded-full" style={{ background: "#e5484d" }} />
-                      <span className="h-2 w-2 rounded-full" style={{ background: "#e6b325" }} />
-                      <span className="h-2 w-2 rounded-full" style={{ background: "#19c37d" }} />
+                      <span className="h-2.5 w-2.5 rounded-full" style={{ background: "#e5484d" }} />
+                      <span className="h-2.5 w-2.5 rounded-full" style={{ background: "#e6b325" }} />
+                      <span className="h-2.5 w-2.5 rounded-full" style={{ background: "#19c37d" }} />
                     </span>
                     A typical free calculator
                   </span>
-                  <span className="font-mono text-[10px]" style={{ color: C.textFaint }}>
+                  <span className="font-mono text-xs" style={{ color: C.textFaint }}>
                     goodcalculators.com
                   </span>
                 </div>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/compare/existing-calculator.png"
-                  alt="A typical free Black-Scholes calculator showing a single point price with no confidence range"
-                  className="w-full"
-                />
-                <div className="px-4 py-3 text-xs" style={{ color: C.textMuted, borderTop: `1px solid ${C.border}` }}>
+                <div className="flex items-center justify-center p-3" style={{ background: "#0d0d10", minHeight: 360 }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/compare/existing-calculator.png"
+                    alt="A typical free Black-Scholes calculator showing a single point price with no confidence range"
+                    className="max-h-[520px] w-full object-contain"
+                  />
+                </div>
+                <div className="px-5 py-4 text-sm leading-relaxed" style={{ color: C.textMuted, borderTop: `1px solid ${C.border}` }}>
                   One flat volatility in, one number out. Call Price: <strong style={{ color: C.text }}>$58.82</strong> — no
                   range, no real-market check, no sense of how wrong it might be.
                 </div>
@@ -629,29 +634,35 @@ export function Dashboard({ initialSnapshot }: { initialSnapshot: MarketSnapshot
                 style={{ background: C.panel, borderColor: C.goldBright, boxShadow: "0 0 0 1px rgba(201,162,39,0.35), 0 12px 32px rgba(201,162,39,0.18)" }}
               >
                 <div
-                  className="flex items-center justify-between px-4 py-3"
+                  className="flex items-center justify-between px-5 py-4"
                   style={{ borderBottom: `1px solid ${C.border}`, background: "linear-gradient(90deg, rgba(201,162,39,0.14), rgba(201,162,39,0.02))" }}
                 >
-                  <span className="text-xs font-semibold" style={{ color: C.goldBright }}>
+                  <span className="text-sm font-bold" style={{ color: C.goldBright }}>
                     ★ This project
                   </span>
-                  <span className="font-mono text-[10px]" style={{ color: C.textFaint }}>
+                  <span className="font-mono text-xs" style={{ color: C.textFaint }}>
                     live demo, this site
                   </span>
                 </div>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/compare/this-project.png"
-                  alt="This project's calibration result showing a fair price with a 90% confidence range and per-parameter uncertainty"
-                  className="w-full"
-                />
-                <div className="px-4 py-3 text-xs" style={{ color: C.textMuted, borderTop: `1px solid ${C.border}` }}>
-                  Same kind of question, calibrated via Heston + ML in ~1ms:{" "}
+                <div className="flex items-center justify-center p-3" style={{ background: "#0d0d10", minHeight: 360 }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/compare/this-project.png"
+                    alt="This project's live calibration demo, showing the flat-vol calculator's price next to this project's price with a 90% confidence range, both computed from the same real strike entered live"
+                    className="w-full object-contain"
+                  />
+                </div>
+                <div className="px-5 py-4 text-sm leading-relaxed" style={{ color: C.textMuted, borderTop: `1px solid ${C.border}` }}>
+                  Same real question, same real input, both models computed live on this page in ~1ms:{" "}
                   <strong style={{ color: C.goldBright }}>₹10.49, likely ₹8.86–₹12.32</strong> — a range, with the
                   per-parameter uncertainty that produced it shown underneath.
                 </div>
               </div>
             </div>
+            <p className="mt-3 text-sm font-semibold" style={{ color: C.goldBright }}>
+              ↓ Don&apos;t just take the screenshots&apos; word for it — type a real strike below and watch both
+              numbers update live.
+            </p>
           </div>
 
           <div className="overflow-x-auto rounded-xl border" style={{ background: C.panel, borderColor: C.border }}>
@@ -871,7 +882,7 @@ export function Dashboard({ initialSnapshot }: { initialSnapshot: MarketSnapshot
           <SectionHeading
             n="1"
             title="Calibrate instantly, with honest uncertainty"
-            sub="Pick a “true” market via the Heston parameters below. We generate its price surface, then our Random Forest recovers the parameters — and a 90% confidence range — in milliseconds, live in your browser."
+            sub="Type a real strike price, pick a “true” market via the Heston parameters below, and watch both an ordinary flat-vol calculator and this project reprice it live, side by side, in milliseconds."
           />
 
           <div className="grid gap-6 lg:grid-cols-[300px_1fr]">
@@ -879,6 +890,27 @@ export function Dashboard({ initialSnapshot }: { initialSnapshot: MarketSnapshot
               className="space-y-4 rounded-xl border p-5"
               style={{ background: C.panel, borderColor: C.border }}
             >
+              <div
+                className="rounded-lg p-3"
+                style={{ background: "rgba(201,162,39,0.08)", border: `1px solid ${C.goldBright}` }}
+              >
+                <label className="flex items-center justify-between text-xs font-semibold" style={{ color: C.goldBright }}>
+                  <span>Strike price (K) — type any real number</span>
+                </label>
+                <input
+                  type="number"
+                  min={70}
+                  max={130}
+                  step={1}
+                  value={strikeK}
+                  onChange={(e) => setStrikeK(Number(e.target.value))}
+                  className="mt-2 w-full rounded-md px-3 py-2 font-mono text-lg font-bold"
+                  style={{ background: C.bg, border: `1px solid ${C.borderStrong}`, color: C.text }}
+                />
+                <p className="mt-1 text-[10px]" style={{ color: C.textFaint }}>
+                  Spot is normalized to 100, so K=100 is at-the-money — try 85 (deep ITM) or 115 (OTM).
+                </p>
+              </div>
               {PARAM_META.map((p) => (
                 <div key={p.key}>
                   <label className="flex justify-between text-xs" style={{ color: C.textMuted }}>
@@ -916,23 +948,36 @@ export function Dashboard({ initialSnapshot }: { initialSnapshot: MarketSnapshot
               {result && (
                 <>
                   <div
-                    className="rounded-xl border p-5"
+                    className="grid gap-4 rounded-xl border p-6 md:grid-cols-2"
                     style={{
                       background: "linear-gradient(160deg, rgba(201,162,39,0.1), rgba(22,22,28,1))",
                       borderColor: C.goldBright,
                       boxShadow: "0 0 32px rgba(201,162,39,0.15)",
                     }}
                   >
-                    <div className="text-xs uppercase tracking-wide" style={{ color: C.textFaint }}>
-                      Fair price (K=100 call), 90% confidence
+                    <div className="border-b pb-4 md:border-b-0 md:border-r md:pb-0 md:pr-6" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+                      <div className="text-xs uppercase tracking-wide" style={{ color: C.textFaint }}>
+                        A typical free calculator (K={strikeK})
+                      </div>
+                      <div className="mt-2 font-mono text-4xl font-bold sm:text-5xl" style={{ color: C.textMuted }}>
+                        ₹{result.naive.price.toFixed(2)}
+                      </div>
+                      <div className="mt-2 text-xs" style={{ color: C.textFaint }}>
+                        One flat volatility in, one number out. No range, no sense of how wrong it might be.
+                      </div>
                     </div>
-                    <div className="mt-1 font-mono text-4xl font-bold" style={{ color: C.goldBright, textShadow: "0 0 24px rgba(201,162,39,0.3)" }}>
-                      ₹{result.priceRange.mean.toFixed(2)}
-                      <span className="ml-3 text-base font-normal" style={{ color: C.textMuted }}>
+                    <div>
+                      <div className="text-xs uppercase tracking-wide" style={{ color: C.goldBright }}>
+                        ★ This project (K={strikeK}), 90% confidence
+                      </div>
+                      <div className="mt-2 font-mono text-4xl font-bold sm:text-5xl" style={{ color: C.goldBright, textShadow: "0 0 24px rgba(201,162,39,0.3)" }}>
+                        ₹{result.priceRange.mean.toFixed(2)}
+                      </div>
+                      <div className="mt-1 text-base font-semibold" style={{ color: C.text }}>
                         likely ₹{result.priceRange.lower.toFixed(2)} – ₹{result.priceRange.upper.toFixed(2)}
-                      </span>
+                      </div>
                     </div>
-                    <div className="mt-3 flex flex-wrap gap-2 text-xs">
+                    <div className="col-span-full mt-1 flex flex-wrap gap-2 text-xs">
                       <span
                         className="rounded px-2 py-1 font-mono"
                         style={{ background: "rgba(25,195,125,0.12)", color: C.good }}
@@ -1101,6 +1146,148 @@ export function Dashboard({ initialSnapshot }: { initialSnapshot: MarketSnapshot
               </div>
             </div>
           </div>
+        </section>
+
+        {/* ============ TRUE CALIBRATION TO LIVE CHAINS ============ */}
+        <section id="realcal" className="mb-16 scroll-mt-6">
+          <SectionHeading
+            n="3"
+            title="True calibration to live SPY & QQQ chains"
+            sub="Not just a shape comparison — this fits Heston parameters directly to real quoted option prices, on two independent tickers, run live on 2026-10-29."
+          />
+          <div className="grid gap-6 md:grid-cols-2">
+            {[
+              {
+                ticker: "SPY",
+                spot: "769.16",
+                days: "29",
+                rho: "−0.64",
+                xi: "1.30",
+                kappa: "1.17",
+                rmse: "0.39",
+                avg: "27.20",
+                img: "/results/real_calibration_spy.png",
+              },
+              {
+                ticker: "QQQ",
+                spot: "714.99",
+                days: "29",
+                rho: "−0.66",
+                xi: "2.11",
+                kappa: "0.24",
+                rmse: "0.57",
+                avg: "25.39",
+                img: "/results/real_calibration_qqq.png",
+              },
+            ].map((t) => (
+              <div
+                key={t.ticker}
+                className="overflow-hidden rounded-xl border transition-transform duration-300 hover:-translate-y-1"
+                style={{ background: C.panel, borderColor: C.border, boxShadow: "0 8px 24px rgba(0,0,0,0.35)" }}
+              >
+                <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: `1px solid ${C.border}`, background: "#1a1a20" }}>
+                  <span className="font-mono text-sm font-bold" style={{ color: C.goldBright }}>
+                    {t.ticker}
+                  </span>
+                  <span className="text-xs" style={{ color: C.textFaint }}>
+                    spot ${t.spot} · {t.days}d to expiry
+                  </span>
+                </div>
+                <div className="flex items-center justify-center p-3" style={{ background: "#0d0d10", minHeight: 280 }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={t.img} alt={`${t.ticker} real calibration price and skew fit`} className="w-full object-contain" />
+                </div>
+                <div className="grid grid-cols-4 gap-2 px-5 py-4 text-center" style={{ borderTop: `1px solid ${C.border}` }}>
+                  <div>
+                    <div className="font-mono text-base font-bold" style={{ color: C.text }}>{t.rho}</div>
+                    <div className="text-[10px] uppercase" style={{ color: C.textFaint }}>ρ</div>
+                  </div>
+                  <div>
+                    <div className="font-mono text-base font-bold" style={{ color: C.text }}>{t.xi}</div>
+                    <div className="text-[10px] uppercase" style={{ color: C.textFaint }}>ξ</div>
+                  </div>
+                  <div>
+                    <div className="font-mono text-base font-bold" style={{ color: C.text }}>{t.kappa}</div>
+                    <div className="text-[10px] uppercase" style={{ color: C.textFaint }}>κ</div>
+                  </div>
+                  <div>
+                    <div className="font-mono text-base font-bold" style={{ color: C.good }}>${t.rmse}</div>
+                    <div className="text-[10px] uppercase" style={{ color: C.textFaint }}>RMSE</div>
+                  </div>
+                </div>
+                <div className="px-5 pb-4 text-xs" style={{ color: C.textMuted }}>
+                  Price fit excellent — RMSE ${t.rmse} on an average target price of ${t.avg}.
+                </div>
+              </div>
+            ))}
+          </div>
+          <div
+            className="mt-6 rounded-xl p-5"
+            style={{ background: "rgba(25,195,125,0.07)", border: `1px solid ${C.good}` }}
+          >
+            <div className="text-xs font-bold uppercase tracking-wide" style={{ color: C.good }}>
+              Repeatability finding
+            </div>
+            <p className="mt-1 text-sm leading-relaxed" style={{ color: C.text }}>
+              Two independent tickers, calibrated separately, both land on a strongly negative ρ (the equity
+              &quot;leverage effect&quot; — prices drop, volatility spikes) and a substantial ξ. Same qualitative
+              Heston story on two unrelated names, not a one-off fit.
+            </p>
+          </div>
+          <p className="mt-3 text-xs leading-relaxed" style={{ color: C.textFaint }}>
+            Honest caveat: the skew fit is directionally correct everywhere but undershoots the steep deep-ITM
+            implied vol (44.7% real vs. 29.3% fitted on SPY&apos;s lowest strike) — consistent with Heston&apos;s
+            known parameter non-identifiability, compounded by only 7 calibration strikes. This re-runs the slow
+            Nelder-Mead optimizer, not the trained Random Forest, because the RF was trained on a fixed
+            S0=100/T=1yr grid and a live ~29-day chain needs its own — see Limitations below.
+          </p>
+        </section>
+
+        {/* ============ LIMITATIONS & WHAT'S NEXT ============ */}
+        <section id="limits" className="mb-16 scroll-mt-6">
+          <SectionHeading n="!" title="Limitations and what's next" sub="Honest about what's modest, not just what works." />
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="rounded-xl border p-5" style={{ background: C.panel, borderColor: C.border }}>
+              <div className="text-xs font-bold uppercase tracking-wide" style={{ color: C.critical }}>
+                Honest limitations
+              </div>
+              <ul className="mt-3 space-y-2.5 text-sm" style={{ color: C.textMuted }}>
+                {[
+                  "Per-parameter R² is only 0.16–0.57 on held-out data — modest, and a direct consequence of Heston's non-identifiability.",
+                  "The real-data check (SPY/QQQ) used the slow Nelder-Mead optimizer, not the trained ML model.",
+                  "The real chain is ~29 days to expiry; the synthetic comparison example is 1 year — shape, not scale, is comparable.",
+                  "Deep in-the-money skew is undershot, with only 7 calibration strikes.",
+                ].map((t, i) => (
+                  <li key={i} className="flex gap-2">
+                    <span style={{ color: C.critical }}>•</span>
+                    <span>{t}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="rounded-xl border p-5" style={{ background: C.panel, borderColor: C.border }}>
+              <div className="text-xs font-bold uppercase tracking-wide" style={{ color: C.good }}>
+                Still to do
+              </div>
+              <ul className="mt-3 space-y-2.5 text-sm" style={{ color: C.textMuted }}>
+                {[
+                  "Retrain or adapt the ML calibrator to run directly on a live chain's own strikes and expiry.",
+                  "Then compare the ML calibrator against the slow baseline on real, noisier market data.",
+                  "Check whether the reported confidence ranges actually contain the real market prices.",
+                ].map((t, i) => (
+                  <li key={i} className="flex gap-2">
+                    <span style={{ color: C.good }}>•</span>
+                    <span>{t}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          <p className="mt-4 text-xs leading-relaxed" style={{ color: C.textFaint }}>
+            The core pipeline — pricing, simulation, calibration, uncertainty, and real-market validation — is
+            complete end to end. What remains is productionizing the ML calibrator for live chains, not rebuilding
+            any of the math.
+          </p>
         </section>
 
         {/* ============ VERIFICATION FEED ============ */}

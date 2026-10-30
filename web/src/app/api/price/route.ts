@@ -54,8 +54,9 @@ export async function POST(request: Request) {
   const { mean, lower, upper } = predictWithUncertainty(model, targetPrices);
   const mlTimeMs = Date.now() - t0;
 
-  // 3. Carry the parameter uncertainty through to a final K=100 option price range
-  const kTarget = 100;
+  // 3. Carry the parameter uncertainty through to a final option price range,
+  //    at whatever strike the user actually typed in (defaults to 100 = ATM).
+  const kTarget = clamp(Number(body.K ?? 100), [70, 130]);
   const pMean = hestonMcPrice(S0, kTarget, T, R, mean as unknown as HestonParams, "call", 12000, 50, 5).price;
   const pLower = hestonMcPrice(S0, kTarget, T, R, lower as unknown as HestonParams, "call", 12000, 50, 5).price;
   const pUpper = hestonMcPrice(S0, kTarget, T, R, upper as unknown as HestonParams, "call", 12000, 50, 5).price;
