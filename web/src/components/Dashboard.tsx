@@ -118,11 +118,14 @@ const PIPELINE = [
 
 function StatTile({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div className="rounded-lg border px-4 py-3" style={{ background: C.panel, borderColor: C.border }}>
+    <div
+      className="rounded-xl border px-4 py-3.5 transition-transform duration-300 hover:-translate-y-0.5"
+      style={{ background: "linear-gradient(160deg, #18181f, #121216)", borderColor: C.border, boxShadow: "0 4px 16px rgba(0,0,0,0.3)" }}
+    >
       <div className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: C.textFaint }}>
         {label}
       </div>
-      <div className="mt-1 font-mono text-xl font-bold" style={{ color: C.goldBright }}>
+      <div className="mt-1 font-mono text-2xl font-bold" style={{ color: C.goldBright, textShadow: "0 0 18px rgba(201,162,39,0.25)" }}>
         {value}
       </div>
       {sub && (
@@ -208,18 +211,22 @@ function WatchRow({
 
 function SectionHeading({ n, title, sub }: { n: string; title: string; sub: string }) {
   return (
-    <div className="mb-5 flex items-start gap-3">
+    <div className="mb-6 flex items-start gap-3.5">
       <span
-        className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full font-mono text-xs font-bold"
-        style={{ background: C.gold, color: C.bg }}
+        className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-mono text-xs font-bold"
+        style={{
+          background: `linear-gradient(135deg, ${C.goldBright}, ${C.gold})`,
+          color: C.bg,
+          boxShadow: "0 0 0 1px rgba(255,255,255,0.08) inset, 0 0 16px rgba(201,162,39,0.4)",
+        }}
       >
         {n}
       </span>
       <div>
-        <h2 className="text-xl font-semibold" style={{ color: C.text }}>
+        <h2 className="text-2xl font-bold tracking-tight" style={{ color: C.text }}>
           {title}
         </h2>
-        <p className="mt-1 text-sm" style={{ color: C.textMuted }}>
+        <p className="mt-1.5 text-sm leading-relaxed" style={{ color: C.textMuted }}>
           {sub}
         </p>
       </div>
@@ -256,11 +263,19 @@ function ComparisonCard({
 }) {
   return (
     <div
-      className={highlight ? "rounded-xl p-5" : "rounded-xl border p-5"}
+      className={
+        highlight
+          ? "rounded-xl p-5 transition-transform duration-300 hover:-translate-y-1"
+          : "rounded-xl border p-5 transition-transform duration-300 hover:-translate-y-1"
+      }
       style={
         highlight
-          ? { background: "rgba(201,162,39,0.06)", border: `2px solid ${C.gold}` }
-          : { background: C.panel, borderColor: C.border }
+          ? {
+              background: "linear-gradient(160deg, rgba(201,162,39,0.12), rgba(201,162,39,0.02))",
+              border: `2px solid ${C.gold}`,
+              boxShadow: "0 12px 32px rgba(201,162,39,0.2)",
+            }
+          : { background: C.panel, borderColor: C.border, boxShadow: "0 4px 16px rgba(0,0,0,0.3)" }
       }
     >
       <div className="flex items-center gap-2">
@@ -286,7 +301,6 @@ function ComparisonCard({
 }
 
 export function Dashboard({ initialSnapshot }: { initialSnapshot: MarketSnapshot }) {
-  const [tab, setTab] = useState<"demo" | "compare">("demo");
   const [spot, setSpot] = useState<SpotData | null>(null);
   const [tick, setTick] = useState(0);
 
@@ -351,8 +365,19 @@ export function Dashboard({ initialSnapshot }: { initialSnapshot: MarketSnapshot
   const atmReal = moneyness.find((m) => m.x >= 98 && m.x <= 102);
 
   return (
-    <div style={{ background: C.bg }}>
-      <div className="mx-auto max-w-6xl px-5 py-10">
+    <div style={{ background: C.bg, position: "relative", overflow: "hidden" }}>
+      {/* decorative glow orbs */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -left-40 -top-40 h-[500px] w-[500px] rounded-full"
+        style={{ background: "radial-gradient(circle, rgba(201,162,39,0.16), transparent 70%)", filter: "blur(10px)" }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-40 top-20 h-[460px] w-[460px] rounded-full"
+        style={{ background: "radial-gradient(circle, rgba(57,135,229,0.12), transparent 70%)", filter: "blur(10px)" }}
+      />
+      <div className="relative mx-auto max-w-6xl px-5 py-10">
         {/* ============ HERO ============ */}
         <header className="mb-10">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -370,10 +395,20 @@ export function Dashboard({ initialSnapshot }: { initialSnapshot: MarketSnapshot
             </a>
           </div>
 
-          <h1 className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl" style={{ color: C.text }}>
-            Option Pricing Under <span style={{ color: C.goldBright }}>Stochastic Volatility</span>
+          <h1 className="mt-3 text-5xl font-bold tracking-tight sm:text-6xl" style={{ color: C.text }}>
+            Option Pricing Under{" "}
+            <span
+              style={{
+                backgroundImage: `linear-gradient(135deg, ${C.goldBright}, #f5d78a, ${C.gold})`,
+                WebkitBackgroundClip: "text",
+                backgroundClip: "text",
+                color: "transparent",
+              }}
+            >
+              Stochastic Volatility
+            </span>
           </h1>
-          <p className="mt-3 max-w-2xl text-base" style={{ color: C.textMuted }}>
+          <p className="mt-4 max-w-2xl text-lg leading-relaxed" style={{ color: C.textMuted }}>
             Using the Heston model and machine learning to make option pricing faster — and honest about its own
             uncertainty.
           </p>
@@ -384,7 +419,7 @@ export function Dashboard({ initialSnapshot }: { initialSnapshot: MarketSnapshot
           {/* live status pill */}
           <div
             className="mt-5 inline-flex items-center gap-2 rounded-full border px-3 py-1.5"
-            style={{ background: C.panel, borderColor: C.border }}
+            style={{ background: C.panel, borderColor: C.border, boxShadow: "0 4px 12px rgba(0,0,0,0.25)" }}
           >
             <span className="relative flex h-2 w-2">
               <span
@@ -511,30 +546,286 @@ export function Dashboard({ initialSnapshot }: { initialSnapshot: MarketSnapshot
           </div>
         </header>
 
-        {/* ============ TAB NAV ============ */}
-        <div className="mb-10 flex gap-1 border-b" style={{ borderColor: C.border }}>
+        {/* ============ QUICK NAV ============ */}
+        <nav className="mb-10 flex flex-wrap gap-1 border-b" style={{ borderColor: C.border }}>
           {[
-            { key: "demo" as const, label: "Live demo" },
-            { key: "compare" as const, label: "vs. existing tools" },
-          ].map((t) => (
-            <button
-              key={t.key}
-              onClick={() => setTab(t.key)}
-              className="relative px-4 py-3 text-sm font-semibold transition-colors"
-              style={{ color: tab === t.key ? C.goldBright : C.textMuted }}
+            { href: "#difference", label: "The difference" },
+            { href: "#pipeline", label: "Pipeline" },
+            { href: "#calibrate", label: "Calibrate live" },
+            { href: "#market", label: "Market validation" },
+            { href: "#verify", label: "Verification feed" },
+          ].map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              className="rounded-t-md px-3.5 py-3 text-xs font-semibold text-neutral-400 transition-colors hover:text-[#e3bb3a]"
             >
-              {t.label}
-              {tab === t.key && (
-                <span className="absolute inset-x-0 -bottom-px h-0.5" style={{ background: C.gold }} />
-              )}
-            </button>
+              {link.label}
+            </a>
           ))}
-        </div>
+        </nav>
 
-        {tab === "demo" && (
-        <>
+        {/* ============ COMPARISON ============ */}
+        <section id="difference" className="mb-16 scroll-mt-6">
+          <div
+            className="mb-8 overflow-hidden rounded-2xl p-6"
+            style={{
+              background: "linear-gradient(135deg, rgba(201,162,39,0.14), rgba(201,162,39,0.02))",
+              border: `1px solid ${C.goldBright}`,
+              boxShadow: "0 0 40px rgba(201,162,39,0.12)",
+            }}
+          >
+            <div className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: C.goldBright }}>
+              The difference, in one line
+            </div>
+            <p className="mt-2 text-xl font-semibold leading-snug sm:text-2xl" style={{ color: C.text }}>
+              Free tools give you <span style={{ color: C.textMuted }}>a single number.</span> This project gives you{" "}
+              <span style={{ color: C.goldBright }}>a number and how sure it is</span> — calibrated to live market data.
+            </p>
+          </div>
+
+          <SectionHeading
+            n="VS"
+            title="How this compares to what's already out there"
+            sub="Three kinds of tools already exist for this problem. Each gives up something this project doesn't have to."
+          />
+
+          <div className="mb-10">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wide" style={{ color: C.textFaint }}>
+              Same question, two real screenshots — not a mockup
+            </p>
+            <div className="grid grid-cols-1 items-start gap-5 md:grid-cols-2">
+              <div
+                className="overflow-hidden rounded-xl border transition-transform duration-300 hover:-translate-y-1"
+                style={{ background: C.panel, borderColor: C.border, boxShadow: "0 8px 24px rgba(0,0,0,0.35)" }}
+              >
+                <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: `1px solid ${C.border}`, background: "#1a1a20" }}>
+                  <span className="flex items-center gap-2 text-xs font-semibold" style={{ color: C.text }}>
+                    <span className="flex gap-1">
+                      <span className="h-2 w-2 rounded-full" style={{ background: "#e5484d" }} />
+                      <span className="h-2 w-2 rounded-full" style={{ background: "#e6b325" }} />
+                      <span className="h-2 w-2 rounded-full" style={{ background: "#19c37d" }} />
+                    </span>
+                    A typical free calculator
+                  </span>
+                  <span className="font-mono text-[10px]" style={{ color: C.textFaint }}>
+                    goodcalculators.com
+                  </span>
+                </div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/compare/existing-calculator.png"
+                  alt="A typical free Black-Scholes calculator showing a single point price with no confidence range"
+                  className="w-full"
+                />
+                <div className="px-4 py-3 text-xs" style={{ color: C.textMuted, borderTop: `1px solid ${C.border}` }}>
+                  One flat volatility in, one number out. Call Price: <strong style={{ color: C.text }}>$58.82</strong> — no
+                  range, no real-market check, no sense of how wrong it might be.
+                </div>
+              </div>
+
+              <div
+                className="overflow-hidden rounded-xl border transition-transform duration-300 hover:-translate-y-1"
+                style={{ background: C.panel, borderColor: C.goldBright, boxShadow: "0 0 0 1px rgba(201,162,39,0.35), 0 12px 32px rgba(201,162,39,0.18)" }}
+              >
+                <div
+                  className="flex items-center justify-between px-4 py-3"
+                  style={{ borderBottom: `1px solid ${C.border}`, background: "linear-gradient(90deg, rgba(201,162,39,0.14), rgba(201,162,39,0.02))" }}
+                >
+                  <span className="text-xs font-semibold" style={{ color: C.goldBright }}>
+                    ★ This project
+                  </span>
+                  <span className="font-mono text-[10px]" style={{ color: C.textFaint }}>
+                    live demo, this site
+                  </span>
+                </div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/compare/this-project.png"
+                  alt="This project's calibration result showing a fair price with a 90% confidence range and per-parameter uncertainty"
+                  className="w-full"
+                />
+                <div className="px-4 py-3 text-xs" style={{ color: C.textMuted, borderTop: `1px solid ${C.border}` }}>
+                  Same kind of question, calibrated via Heston + ML in ~1ms:{" "}
+                  <strong style={{ color: C.goldBright }}>₹10.49, likely ₹8.86–₹12.32</strong> — a range, with the
+                  per-parameter uncertainty that produced it shown underneath.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto rounded-xl border" style={{ background: C.panel, borderColor: C.border }}>
+            <table className="w-full text-xs">
+              <thead>
+                <tr style={{ background: "#1a1a20" }}>
+                  <th className="px-3 py-3 text-left align-bottom" style={{ color: C.textFaint }}>
+                    <span className="text-[10px] font-semibold uppercase tracking-wide">Feature</span>
+                  </th>
+                  <th className="px-3 py-3 text-left align-bottom" style={{ color: C.textFaint }}>
+                    <span className="block text-[10px] font-semibold uppercase tracking-wide">Free calculators</span>
+                    <span className="mt-0.5 block font-normal normal-case" style={{ color: C.textFaint }}>
+                      CBOE, Zerodha, Groww
+                    </span>
+                  </th>
+                  <th className="px-3 py-3 text-left align-bottom" style={{ color: C.textFaint }}>
+                    <span className="block text-[10px] font-semibold uppercase tracking-wide">Paid platforms</span>
+                    <span className="mt-0.5 block font-normal normal-case" style={{ color: C.textFaint }}>
+                      Bloomberg, Refinitiv Eikon
+                    </span>
+                  </th>
+                  <th className="px-3 py-3 text-left align-bottom" style={{ color: C.textFaint }}>
+                    <span className="block text-[10px] font-semibold uppercase tracking-wide">Code libraries</span>
+                    <span className="mt-0.5 block font-normal normal-case" style={{ color: C.textFaint }}>
+                      QuantLib
+                    </span>
+                  </th>
+                  <th
+                    className="px-3 py-3 text-left align-bottom"
+                    style={{ color: C.goldBright, background: "linear-gradient(180deg, rgba(201,162,39,0.18), rgba(201,162,39,0.06))" }}
+                  >
+                    <span className="block text-[10px] font-semibold uppercase tracking-wide">This project</span>
+                    <span className="mt-0.5 block font-normal normal-case" style={{ color: C.goldBright, opacity: 0.8 }}>
+                      Free, live website
+                    </span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {COMPARISON_ROWS.map((row, i) => (
+                  <tr
+                    key={row.feature}
+                    style={{ borderTop: `1px solid ${C.border}`, background: i % 2 ? "transparent" : "rgba(255,255,255,0.015)" }}
+                  >
+                    <td className="px-3 py-3 font-semibold" style={{ color: C.text }}>
+                      {row.feature}
+                    </td>
+                    <td className="px-3 py-3" style={{ color: C.textMuted }}>
+                      {row.retail}
+                    </td>
+                    <td className="px-3 py-3" style={{ color: C.textMuted }}>
+                      {row.paid}
+                    </td>
+                    <td className="px-3 py-3" style={{ color: C.textMuted }}>
+                      {row.lib}
+                    </td>
+                    <td className="px-3 py-3 font-semibold" style={{ color: C.goldBright, background: "rgba(201,162,39,0.05)" }}>
+                      {row.ours}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <p className="mt-3 text-xs leading-relaxed" style={{ color: C.textFaint }}>
+            CBOE&apos;s public options calculator, and most retail tools like Zerodha&apos;s or Groww&apos;s, price off
+            Black-Scholes with one volatility number you type in — accurate at one strike, structurally wrong at
+            every other strike on the same expiry. Bloomberg and Refinitiv do have skew-aware models, but they sit
+            behind institutional licenses costing tens of thousands of dollars a year. QuantLib has a correct Heston
+            implementation, but it&apos;s a C++/Python library — there&apos;s no live site, no calibration UI, and no
+            confidence interval unless you build all three yourself.
+          </p>
+        </section>
+
+        <section className="mb-20">
+          <SectionHeading
+            n="VS"
+            title="Same question, four answers"
+            sub="What each kind of tool actually gives you when you ask: what is this option worth, and how sure are you?"
+          />
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <ComparisonCard
+              label="Free calculator"
+              sub="CBOE · Zerodha · Groww"
+              dotColor={C.critical}
+              headerColor={C.textFaint}
+              priceLine={
+                result && (
+                  <div className="font-mono text-2xl font-bold" style={{ color: C.textMuted }}>
+                    ₹{result.naive.price.toFixed(2)}
+                  </div>
+                )
+              }
+              bullets={[
+                { ok: false, text: `Flat volatility (${result ? (result.naive.flatVol * 100).toFixed(1) : "—"}% assumed at every strike)` },
+                { ok: false, text: "Single number, no confidence range" },
+                { ok: false, text: "No real-market validation shown" },
+                { ok: true, text: "Free and instant" },
+              ]}
+            />
+
+            <ComparisonCard
+              label="Paid platform"
+              sub="Bloomberg · Refinitiv Eikon"
+              dotColor="#fab219"
+              headerColor={C.textFaint}
+              priceLine={
+                <div className="font-mono text-2xl font-bold" style={{ color: C.textMuted }}>
+                  $24,000+/yr
+                </div>
+              }
+              bullets={[
+                { ok: true, text: "Skew-aware models (Heston / SABR) exist" },
+                { ok: false, text: "Gated behind an institutional license" },
+                { ok: null, text: "Confidence ranges not standard output" },
+                { ok: false, text: "Not usable from a student project budget" },
+              ]}
+            />
+
+            <ComparisonCard
+              label="Code library"
+              sub="QuantLib"
+              dotColor={C.blue}
+              headerColor={C.textFaint}
+              priceLine={
+                <div className="font-mono text-2xl font-bold" style={{ color: C.textMuted }}>
+                  Free
+                </div>
+              }
+              bullets={[
+                { ok: true, text: "Correct Heston pricing is in there" },
+                { ok: false, text: "No website — you write the code yourself" },
+                { ok: false, text: "No confidence intervals out of the box" },
+                { ok: false, text: "No live market validation built in" },
+              ]}
+            />
+
+            <ComparisonCard
+              label="This project"
+              sub="Free, open source, live"
+              dotColor={C.good}
+              headerColor={C.goldBright}
+              highlight
+              priceLine={
+                result && (
+                  <div className="font-mono text-2xl font-bold" style={{ color: C.goldBright }}>
+                    ₹{result.priceRange.mean.toFixed(2)}{" "}
+                    <span className="text-sm font-normal" style={{ color: C.textMuted }}>
+                      (₹{result.priceRange.lower.toFixed(2)}–₹{result.priceRange.upper.toFixed(2)})
+                    </span>
+                  </div>
+                )
+              }
+              bullets={[
+                { ok: true, text: "Stochastic volatility — produces a real skew" },
+                { ok: true, text: "Honest 90% confidence range, not false precision" },
+                { ok: true, text: "Validated against a live real options chain" },
+                { ok: true, text: "No install, no license — runs in your browser" },
+              ]}
+            />
+          </div>
+
+          <p className="mt-4 text-xs leading-relaxed" style={{ color: C.textFaint }}>
+            The gap this project sits in: free tools give you a number with no sense of its own uncertainty; paid
+            platforms give you the right model but price out a student (or a retail trader); code libraries give you
+            the right math but no usable product around it. This project is the one column that is free, skew-aware,
+            honest about its uncertainty, and a live website — not a spreadsheet, a license, or a library you have to
+            program yourself.
+          </p>
+        </section>
+
         {/* ============ PIPELINE ============ */}
-        <section className="mb-14">
+        <section id="pipeline" className="mb-16 scroll-mt-6">
           <SectionHeading
             n="0"
             title="The research pipeline"
@@ -544,7 +835,7 @@ export function Dashboard({ initialSnapshot }: { initialSnapshot: MarketSnapshot
             {PIPELINE.map((p) => (
               <div
                 key={p.n}
-                className="rounded-lg border p-4 transition-colors hover:border-neutral-500"
+                className="rounded-lg border p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-[#e3bb3a] hover:shadow-xl"
                 style={{ background: C.panel, borderColor: C.border }}
               >
                 <div className="flex items-center justify-between">
@@ -576,7 +867,7 @@ export function Dashboard({ initialSnapshot }: { initialSnapshot: MarketSnapshot
         </section>
 
         {/* ============ 1. CALIBRATION ============ */}
-        <section className="mb-14">
+        <section id="calibrate" className="mb-16 scroll-mt-6">
           <SectionHeading
             n="1"
             title="Calibrate instantly, with honest uncertainty"
@@ -610,8 +901,12 @@ export function Dashboard({ initialSnapshot }: { initialSnapshot: MarketSnapshot
               <button
                 onClick={runCalibration}
                 disabled={loading}
-                className="w-full rounded-md py-2 text-sm font-semibold transition-opacity disabled:opacity-50"
-                style={{ background: C.gold, color: C.bg }}
+                className="w-full rounded-md py-2.5 text-sm font-bold transition-all hover:-translate-y-0.5 disabled:opacity-50"
+                style={{
+                  background: `linear-gradient(135deg, ${C.goldBright}, ${C.gold})`,
+                  color: C.bg,
+                  boxShadow: "0 6px 20px rgba(201,162,39,0.35)",
+                }}
               >
                 {loading ? "Calibrating…" : "Re-calibrate"}
               </button>
@@ -622,12 +917,16 @@ export function Dashboard({ initialSnapshot }: { initialSnapshot: MarketSnapshot
                 <>
                   <div
                     className="rounded-xl border p-5"
-                    style={{ background: C.panel, borderColor: C.border }}
+                    style={{
+                      background: "linear-gradient(160deg, rgba(201,162,39,0.1), rgba(22,22,28,1))",
+                      borderColor: C.goldBright,
+                      boxShadow: "0 0 32px rgba(201,162,39,0.15)",
+                    }}
                   >
                     <div className="text-xs uppercase tracking-wide" style={{ color: C.textFaint }}>
                       Fair price (K=100 call), 90% confidence
                     </div>
-                    <div className="mt-1 font-mono text-3xl font-bold" style={{ color: C.goldBright }}>
+                    <div className="mt-1 font-mono text-4xl font-bold" style={{ color: C.goldBright, textShadow: "0 0 24px rgba(201,162,39,0.3)" }}>
                       ₹{result.priceRange.mean.toFixed(2)}
                       <span className="ml-3 text-base font-normal" style={{ color: C.textMuted }}>
                         likely ₹{result.priceRange.lower.toFixed(2)} – ₹{result.priceRange.upper.toFixed(2)}
@@ -738,7 +1037,7 @@ export function Dashboard({ initialSnapshot }: { initialSnapshot: MarketSnapshot
         </section>
 
         {/* ============ 2. REAL MARKET VALIDATION ============ */}
-        <section className="mb-14">
+        <section id="market" className="mb-16 scroll-mt-6">
           <SectionHeading
             n="2"
             title="Validated against real market data"
@@ -805,7 +1104,7 @@ export function Dashboard({ initialSnapshot }: { initialSnapshot: MarketSnapshot
         </section>
 
         {/* ============ VERIFICATION FEED ============ */}
-        <section className="mb-10">
+        <section id="verify" className="mb-10 scroll-mt-6">
           <SectionHeading n="✓" title="Verification feed" sub="Every claim above was checked, not assumed." />
           <div className="space-y-2">
             {[
@@ -820,9 +1119,10 @@ export function Dashboard({ initialSnapshot }: { initialSnapshot: MarketSnapshot
             ].map((item, i) => (
               <div
                 key={i}
-                className="flex items-center gap-3 rounded-lg border px-4 py-3"
-                style={{ background: C.panel, borderColor: C.border, borderLeft: `3px solid ${item.color}` }}
+                className="flex items-center gap-3 rounded-lg border px-4 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+                style={{ background: C.panel, borderColor: C.border }}
               >
+                <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: item.color }} />
                 <span
                   className="shrink-0 rounded px-1.5 py-0.5 font-mono text-[9px] font-bold tracking-wide"
                   style={{ background: "rgba(255,255,255,0.06)", color: item.color }}
@@ -839,240 +1139,6 @@ export function Dashboard({ initialSnapshot }: { initialSnapshot: MarketSnapshot
             ))}
           </div>
         </section>
-        </>
-        )}
-
-        {tab === "compare" && (
-        <>
-        {/* ============ COMPARISON TAB ============ */}
-        <section className="mb-14">
-          <SectionHeading
-            n="VS"
-            title="How this compares to what's already out there"
-            sub="Three kinds of tools already exist for this problem. Each gives up something this project doesn't have to."
-          />
-
-          <div className="mb-10">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wide" style={{ color: C.textFaint }}>
-              Same question, two real screenshots — not a mockup
-            </p>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="overflow-hidden rounded-xl border" style={{ background: C.panel, borderColor: C.border }}>
-                <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: `1px solid ${C.border}` }}>
-                  <span className="text-xs font-semibold" style={{ color: C.text }}>
-                    A typical free calculator
-                  </span>
-                  <span className="font-mono text-[10px]" style={{ color: C.textFaint }}>
-                    goodcalculators.com
-                  </span>
-                </div>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/compare/existing-calculator.png"
-                  alt="A typical free Black-Scholes calculator showing a single point price with no confidence range"
-                  className="w-full"
-                />
-                <div className="px-4 py-3 text-xs" style={{ color: C.textMuted, borderTop: `1px solid ${C.border}` }}>
-                  One flat volatility in, one number out. Call Price: <strong style={{ color: C.text }}>$58.82</strong> — no
-                  range, no real-market check, no sense of how wrong it might be.
-                </div>
-              </div>
-
-              <div
-                className="overflow-hidden rounded-xl border"
-                style={{ background: C.panel, borderColor: C.goldBright, boxShadow: "0 0 0 1px rgba(201,162,39,0.25)" }}
-              >
-                <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: `1px solid ${C.border}` }}>
-                  <span className="text-xs font-semibold" style={{ color: C.goldBright }}>
-                    This project
-                  </span>
-                  <span className="font-mono text-[10px]" style={{ color: C.textFaint }}>
-                    live demo, this site
-                  </span>
-                </div>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/compare/this-project.png"
-                  alt="This project's calibration result showing a fair price with a 90% confidence range and per-parameter uncertainty"
-                  className="w-full"
-                />
-                <div className="px-4 py-3 text-xs" style={{ color: C.textMuted, borderTop: `1px solid ${C.border}` }}>
-                  Same kind of question, calibrated via Heston + ML in ~1ms:{" "}
-                  <strong style={{ color: C.goldBright }}>₹10.49, likely ₹8.86–₹12.32</strong> — a range, with the
-                  per-parameter uncertainty that produced it shown underneath.
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="overflow-x-auto rounded-xl border" style={{ background: C.panel, borderColor: C.border }}>
-            <table className="w-full text-xs">
-              <thead>
-                <tr style={{ background: "#1a1a20" }}>
-                  <th className="px-3 py-3 text-left align-bottom" style={{ color: C.textFaint }}>
-                    <span className="text-[10px] font-semibold uppercase tracking-wide">Feature</span>
-                  </th>
-                  <th className="px-3 py-3 text-left align-bottom" style={{ color: C.textFaint }}>
-                    <span className="block text-[10px] font-semibold uppercase tracking-wide">Free calculators</span>
-                    <span className="mt-0.5 block font-normal normal-case" style={{ color: C.textFaint }}>
-                      CBOE, Zerodha, Groww
-                    </span>
-                  </th>
-                  <th className="px-3 py-3 text-left align-bottom" style={{ color: C.textFaint }}>
-                    <span className="block text-[10px] font-semibold uppercase tracking-wide">Paid platforms</span>
-                    <span className="mt-0.5 block font-normal normal-case" style={{ color: C.textFaint }}>
-                      Bloomberg, Refinitiv Eikon
-                    </span>
-                  </th>
-                  <th className="px-3 py-3 text-left align-bottom" style={{ color: C.textFaint }}>
-                    <span className="block text-[10px] font-semibold uppercase tracking-wide">Code libraries</span>
-                    <span className="mt-0.5 block font-normal normal-case" style={{ color: C.textFaint }}>
-                      QuantLib
-                    </span>
-                  </th>
-                  <th className="px-3 py-3 text-left align-bottom" style={{ color: C.goldBright, background: "rgba(201,162,39,0.08)" }}>
-                    <span className="block text-[10px] font-semibold uppercase tracking-wide">This project</span>
-                    <span className="mt-0.5 block font-normal normal-case" style={{ color: C.goldBright, opacity: 0.8 }}>
-                      Free, live website
-                    </span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {COMPARISON_ROWS.map((row, i) => (
-                  <tr
-                    key={row.feature}
-                    style={{ borderTop: `1px solid ${C.border}`, background: i % 2 ? "transparent" : "rgba(255,255,255,0.015)" }}
-                  >
-                    <td className="px-3 py-3 font-semibold" style={{ color: C.text }}>
-                      {row.feature}
-                    </td>
-                    <td className="px-3 py-3" style={{ color: C.textMuted }}>
-                      {row.retail}
-                    </td>
-                    <td className="px-3 py-3" style={{ color: C.textMuted }}>
-                      {row.paid}
-                    </td>
-                    <td className="px-3 py-3" style={{ color: C.textMuted }}>
-                      {row.lib}
-                    </td>
-                    <td className="px-3 py-3 font-semibold" style={{ color: C.goldBright, background: "rgba(201,162,39,0.05)" }}>
-                      {row.ours}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          <p className="mt-3 text-xs leading-relaxed" style={{ color: C.textFaint }}>
-            CBOE&apos;s public options calculator, and most retail tools like Zerodha&apos;s or Groww&apos;s, price off
-            Black-Scholes with one volatility number you type in — accurate at one strike, structurally wrong at
-            every other strike on the same expiry. Bloomberg and Refinitiv do have skew-aware models, but they sit
-            behind institutional licenses costing tens of thousands of dollars a year. QuantLib has a correct Heston
-            implementation, but it&apos;s a C++/Python library — there&apos;s no live site, no calibration UI, and no
-            confidence interval unless you build all three yourself.
-          </p>
-        </section>
-
-        <section className="mb-14">
-          <SectionHeading
-            n="VS"
-            title="Same question, four answers"
-            sub="What each kind of tool actually gives you when you ask: what is this option worth, and how sure are you?"
-          />
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <ComparisonCard
-              label="Free calculator"
-              sub="CBOE · Zerodha · Groww"
-              dotColor={C.critical}
-              headerColor={C.textFaint}
-              priceLine={
-                result && (
-                  <div className="font-mono text-2xl font-bold" style={{ color: C.textMuted }}>
-                    ₹{result.naive.price.toFixed(2)}
-                  </div>
-                )
-              }
-              bullets={[
-                { ok: false, text: `Flat volatility (${result ? (result.naive.flatVol * 100).toFixed(1) : "—"}% assumed at every strike)` },
-                { ok: false, text: "Single number, no confidence range" },
-                { ok: false, text: "No real-market validation shown" },
-                { ok: true, text: "Free and instant" },
-              ]}
-            />
-
-            <ComparisonCard
-              label="Paid platform"
-              sub="Bloomberg · Refinitiv Eikon"
-              dotColor="#fab219"
-              headerColor={C.textFaint}
-              priceLine={
-                <div className="font-mono text-2xl font-bold" style={{ color: C.textMuted }}>
-                  $24,000+/yr
-                </div>
-              }
-              bullets={[
-                { ok: true, text: "Skew-aware models (Heston / SABR) exist" },
-                { ok: false, text: "Gated behind an institutional license" },
-                { ok: null, text: "Confidence ranges not standard output" },
-                { ok: false, text: "Not usable from a student project budget" },
-              ]}
-            />
-
-            <ComparisonCard
-              label="Code library"
-              sub="QuantLib"
-              dotColor={C.blue}
-              headerColor={C.textFaint}
-              priceLine={
-                <div className="font-mono text-2xl font-bold" style={{ color: C.textMuted }}>
-                  Free
-                </div>
-              }
-              bullets={[
-                { ok: true, text: "Correct Heston pricing is in there" },
-                { ok: false, text: "No website — you write the code yourself" },
-                { ok: false, text: "No confidence intervals out of the box" },
-                { ok: false, text: "No live market validation built in" },
-              ]}
-            />
-
-            <ComparisonCard
-              label="This project"
-              sub="Free, open source, live"
-              dotColor={C.good}
-              headerColor={C.goldBright}
-              highlight
-              priceLine={
-                result && (
-                  <div className="font-mono text-2xl font-bold" style={{ color: C.goldBright }}>
-                    ₹{result.priceRange.mean.toFixed(2)}{" "}
-                    <span className="text-sm font-normal" style={{ color: C.textMuted }}>
-                      (₹{result.priceRange.lower.toFixed(2)}–₹{result.priceRange.upper.toFixed(2)})
-                    </span>
-                  </div>
-                )
-              }
-              bullets={[
-                { ok: true, text: "Stochastic volatility — produces a real skew" },
-                { ok: true, text: "Honest 90% confidence range, not false precision" },
-                { ok: true, text: "Validated against a live real options chain" },
-                { ok: true, text: "No install, no license — runs in your browser" },
-              ]}
-            />
-          </div>
-
-          <p className="mt-4 text-xs leading-relaxed" style={{ color: C.textFaint }}>
-            The gap this project sits in: free tools give you a number with no sense of its own uncertainty; paid
-            platforms give you the right model but price out a student (or a retail trader); code libraries give you
-            the right math but no usable product around it. This project is the one column that is free, skew-aware,
-            honest about its uncertainty, and a live website — not a spreadsheet, a license, or a library you have to
-            program yourself.
-          </p>
-        </section>
-        </>
-        )}
 
         <footer className="flex flex-wrap items-center justify-between gap-3 border-t pt-6 text-xs" style={{ borderColor: C.border, color: C.textFaint }}>
           <div className="flex flex-wrap gap-2">
